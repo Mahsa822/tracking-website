@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hadiban Tracking Load</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            margin: 0;
+            font-size: 3em;
+        }
+        .home-button {
+            margin: 10px 0;
+            display: inline-block;
+            background-color: #003366;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .home-button:hover {
+            background-color: #002244;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        .shipment {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e6e6e6;
+            border-radius: 5px;
+            border-left: 5px solid #003366;
+        }
+        .hidden {
+            display: none;
+        }
+        .error {
+            color: red;
+        }
+        button {
+            background-color: #003366;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #002244;
+        }
+        input[type="text"], input[type="password"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .tracking-result {
+            background-color: #001f33;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>پرتال مدیریت بار</h1>
+        <button class="home-button" onclick="goHome()">بازگشت به خانه</button>
+    </header>
+    
+    <div class="container">
+        <div id="managerLoginContainer" class="form-container">
+            <h2>ورود به بخش لوجستیک و بازرگانی</h2>
+            <input type="text" id="managerUsername" placeholder="نام کاربری" required>
+            <input type="password" id="managerPassword" placeholder="رمز عبور" required>
+            <button id="managerLoginButton">ورود</button>
+            <div id="managerLoginError" class="error hidden">نام کاربری یا رمز عبور اشتباه است!</div>
+        </div>
+
+        <div id="adminContainer" class="hidden">
+            <h3>اضافه کردن بار جدید</h3>
+            <form id="addShipmentForm">
+                <h4>بخش محرمانه</h4>
+                <label for="trackingCode">کد رهگیری:</label>
+                <input type="text" id="trackingCode" required>
+                
+                <label for="companyName">نام شرکت حمل:</label>
+                <input type="text" id="companyName" required>
+                
+                <label for="clearanceAgent">نام ترخیصکار:</label>
+                <input type="text" id="clearanceAgent" required>
+                
+                <label for="shipperName">نام شیپر:</label>
+                <input type="text" id="shipperName" required>
+                
+                <label for="shipperContact">شماره تماس شیپر:</label>
+                <input type="text" id="shipperContact" required>
+                
+                <label for="supplier">ساپلایر:</label>
+                <input type="text" id="supplier" required>
+                
+                <label for="flightType">نوع پرواز:</label>
+                <input type="text" id="flightType" required>
+                
+                <h4>بخش غیرمحرمانه</h4>
+                <label for="origin">مبدا:</label>
+                <input type="text" id="origin" required>
+                
+                <label for="destination">مقصد:</label>
+                <input type="text" id="destination" required>
+                
+                <label for="stopover">توقف:</label>
+                <input type="text" id="stopover" required>
+                
+                <label for="orderDate">تاریخ ثبت سفارش:</label>
+                <input type="text" id="orderDate" required>
+                
+                <label for="deliveryDate">تاریخ تحویل به انبار:</label>
+                <input type="text" id="deliveryDate" required>
+                
+                <label for="status">وضعیت:</label>
+                <select id="status" required>
+                    <option value="در حال حمل">در حال حمل</option>
+                    <option value="تحویل داده شده">تحویل داده شده</option>
+                    <option value="لغو شده">لغو شده</option>
+                </select>
+                
+                <button type="submit">ثبت بار جدید</button>
+            </form>
+
+            <h3>خروجی بارها</h3>
+            <div id="results"></div>
+        </div>
+
+        <div id="managerContainer" class="form-container hidden">
+            <h2>مدیریت بارها</h2>
+            <h3>جستجوی بارها</h3>
+            <label for="searchTrackingCode">جستجوی بار بر اساس کد رهگیری:</label>
+            <input type="text" id="searchTrackingCode">
+            <button id="searchTrackingButton">جستجو</button>
+            <div id="trackingOutput" class="tracking-result hidden"></div>
+
+            <label for="searchUser">جستجوی بارها بر اساس نام مدیریت‌کننده:</label>
+            <select id="searchUser">
+                <option value="مهسا">مهسا</option>
+                <option value="تینا">تینا</option>
+            </select>
+            <button id="searchUserButton">جستجو</button>
+            <div id="userOutput" class="tracking-result hidden"></div>
+
+            <h3>گزارش سه ماهه</h3>
+            <button id="quarterlyReportButton">دریافت گزارش</button>
+            <div id="quarterlyReportOutput" class="tracking-result hidden"></div>
+
+            <h3>تغییر اطلاعات کاربری</h3>
+            <form id="changeUserDetailsForm">
+                <label for="newUsername">نام جدید:</label>
+                <input type="text" id="newUsername" required>
+                <label for="newPassword">رمز عبور جدید:</label>
+                <input type="password" id="newPassword" required>
+                <label for="newPosition">موقعیت شغلی جدید:</label>
+                <input type="text" id="newPosition" required>
+                <button type="submit">تغییر اطلاعات</button>
+            </form>
+            <div id="changeDetailsError" class="error hidden"></div>
+        </div>
+
+        <div id="publicContainer" class="form-container">
+            <h3>جستجوی عمومی بارها</h3>
+            <label for="publicTrackingInput">شماره پیگیری:</label>
+            <input type="text" id="publicTrackingInput" required>
+            <button id="publicTrackingButton">بررسی وضعیت</button>
+            <div id="publicTrackingResult" class="tracking-result hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        const trackingOutputDiv = document.getElementById('trackingOutput');
+        const userOutputDiv = document.getElementById('userOutput');
+        const publicTrackingResultDiv = document.getElementById('publicTrackingResult');
+        const quarterlyReportOutputDiv = document.getElementById('quarterlyReportOutput');
+        const adminContainer = document.getElementById('adminContainer');
+        const managerContainer = document.getElementById('managerContainer');
+        const managerLoginContainer = document.getElementById('managerLoginContainer');
+        const managerLoginError = document.getElementById('managerLoginError');
+        const changeDetailsError = document.getElementById('changeDetailsError');
+
+        let shipments = []; // Array to store shipment information
+        let userCredentials = { // Store user credentials
+            "مدیرعامل": {password: "password123", position: "مدیرعامل"},
+            "مهسا": {password: "mahsapassword", position: "مدیر"},
+            "تینا": {password: "tinapassword", position: "مدیر"}
+        };
+
+        document.getElementById('managerLoginButton').addEventListener('click', function() {
+            const username = document.getElementById('managerUsername').value;
+            const password = document.getElementById('managerPassword').value;
+            if (userCredentials[username] && userCredentials[username].password === password) {
+                managerLoginContainer.classList.add('hidden');
+                if (username === "مدیرعامل") {
+                    managerContainer.classList.remove('hidden');
+                } else {
+                    adminContainer.classList.remove('hidden');
+                }
+            } else {
+                managerLoginError.classList.remove('hidden');
+            }
+        });
+
+        // اضافه کردن بار جدید
+        document.getElementById('addShipmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const trackingCode = document.getElementById('trackingCode').value;
+            const companyName = document.getElementById('companyName').value;
+            const clearanceAgent = document.getElementById('clearanceAgent').value;
+            const shipperName = document.getElementById('shipperName').value;
+            const shipperContact = document.getElementById('shipperContact').value;
+            const supplier = document.getElementById('supplier').value;
+            const flightType = document.getElementById('flightType').value;
+            const origin = document.getElementById('origin').value;
+            const destination = document.getElementById('destination').value;
+            const stopover = document.getElementById('stopover').value;
+            const orderDate = document.getElementById('orderDate').value;
+            const deliveryDate = document.getElementById('deliveryDate').value;
+            const status = document.getElementById('status').value;
+
+            shipments.push({
+                trackingCode,
+                companyName,
+                clearanceAgent,
+                shipperName,
+                shipperContact,
+                supplier,
+                flightType,
+                origin,
+                destination,
+                stopover,
+                orderDate,
+                deliveryDate,
+                status,
+                manager: username // Save the manager's name
+            });
+
+            addShipment({
+                trackingCode,
+                companyName,
+                clearanceAgent,
+                shipperName,
+                shipperContact,
+                supplier,
+                flightType,
+                origin,
+                destination,
+                stopover,
+                orderDate,
+                deliveryDate,
+                status
+            });
+        });
+
+        function addShipment(data) {
+            const shipmentDiv = document.createElement('div');
+            shipmentDiv.classList.add('shipment');
+            shipmentDiv.innerHTML = `<strong>کد رهگیری:</strong> ${data.trackingCode} <br>
+                                     <strong>شرکت حمل:</strong> ${data.companyName} <br>
+                                     <strong>ترخیصکار:</strong> ${data.clearanceAgent} <br>
+                                     <strong>شیپر:</strong> ${data.shipperName} <br>
+                                     <strong>شماره تماس شیپر:</strong> ${data.shipperContact} <br>
+                                     <strong>ساپلایر:</strong> ${data.supplier} <br>
+                                     <strong>نوع پرواز:</strong> ${data.flightType} <br>
+                                     <strong>مبدا:</strong> ${data.origin} <br>
+                                     <strong>مقصد:</strong> ${data.destination} <br>
+                                     <strong>توقف:</strong> ${data.stopover} <br>
+                                     <strong>تاریخ ثبت سفارش:</strong> ${data.orderDate} <br>
+                                     <strong>تاریخ تحویل به انبار:</strong> ${data.deliveryDate} <br>
+                                     <strong>وضعیت:</strong> ${data.status} <br>`;
+            resultsDiv.appendChild(shipmentDiv);
+            document.getElementById('addShipmentForm').reset();
+        }
+
+        // جستجوی بارها برای مدیرعامل
+        document.getElementById('searchTrackingButton').addEventListener('click', function() {
+            const trackingCode = document.getElementById('searchTrackingCode').value;
+            const shipment = shipments.find(s => s.trackingCode === trackingCode);
+            if (shipment) {
+                trackingOutputDiv.innerHTML = `<strong>کد رهگیری:</strong> ${shipment.trackingCode} <br>
+                                                <strong>شرکت حمل:</strong> ${shipment.companyName} <br>
+                                                <strong>ترخیصکار:</strong> ${shipment.clearanceAgent} <br>
+                                                <strong>شیپر:</strong> ${shipment.shipperName} <br>
+                                                <strong>شماره تماس شیپر:</strong> ${shipment.shipperContact} <br>
+                                                <strong>ساپلایر:</strong> ${shipment.supplier} <br>
+                                                <strong>نوع پرواز:</strong> ${shipment.flightType} <br>
+                                                <strong>مبدا:</strong> ${shipment.origin} <br>
+                                                <strong>مقصد:</strong> ${shipment.destination} <br>
+                                                <strong>توقف:</strong> ${shipment.stopover} <br>
+                                                <strong>تاریخ ثبت سفارش:</strong> ${shipment.orderDate} <br>
+                                                <strong>تاریخ تحویل به انبار:</strong> ${shipment.deliveryDate} <br>
+                                                <strong>وضعیت:</strong> ${shipment.status} <br>`;
+                trackingOutputDiv.classList.remove('hidden');
+            } else {
+                trackingOutputDiv.textContent = 'بار با این کد رهگیری یافت نشد.';
+                trackingOutputDiv.classList.remove('hidden');
+            }
+        });
+
+        // جستجوی بارها بر اساس نام مدیریت‌کننده
+        document.getElementById('searchUserButton').addEventListener('click', function() {
+            const userName = document.getElementById('searchUser').value;
+            const userShipments = shipments.filter(s => s.manager === userName);
+            userOutputDiv.innerHTML = '';
+            if (userShipments.length > 0) {
+                userShipments.forEach(shipment => {
+                    const shipmentDiv = document.createElement('div');
+                    shipmentDiv.innerHTML = `<strong>کد رهگیری:</strong> ${shipment.trackingCode} <br>
+                                             <strong>شرکت حمل:</strong> ${shipment.companyName} <br>
+                                             <strong>وضعیت:</strong> ${shipment.status} <br><br>`;
+                    userOutputDiv.appendChild(shipmentDiv);
+                });
+                userOutputDiv.classList.remove('hidden');
+            } else {
+                userOutputDiv.textContent = 'هیچ بار ثبت شده‌ای برای این مدیریت‌کننده یافت نشد.';
+                userOutputDiv.classList.remove('hidden');
+            }
+        });
+
+        // دریافت گزارش سه ماهه
+        document.getElementById('quarterlyReportButton').addEventListener('click', function() {
+            const report = shipments.map(s => 
+                `کد رهگیری: ${s.trackingCode}, شرکت حمل: ${s.companyName}, وضعیت: ${s.status}`
+            ).join('<br>');
+            quarterlyReportOutputDiv.innerHTML = report || 'هیچ بار ثبت شده‌ای وجود ندارد.';
+            quarterlyReportOutputDiv.classList.remove('hidden');
+        });
+
+        // تغییر اطلاعات کاربری
+        document.getElementById('changeUserDetailsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newUsername = document.getElementById('newUsername').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const newPosition = document.getElementById('newPosition').value;
+            const currentUser = document.getElementById('managerUsername').value;
+
+            if (userCredentials[currentUser]) {
+                userCredentials[newUsername] = {
+                    password: newPassword,
+                    position: newPosition
+                };
+                delete userCredentials[currentUser]; // Delete old username credentials
+                changeDetailsError.textContent = 'اطلاعات با موفقیت تغییر کرد.';
+                changeDetailsError.classList.remove('hidden');
+            } else {
+                changeDetailsError.textContent = 'خطا در تغییر اطلاعات.';
+                changeDetailsError.classList.remove('hidden');
+            }
+        });
+
+        // جستجوی عمومی بارها
+        document.getElementById('publicTrackingButton').addEventListener('click', function() {
+            const publicTrackingCode = document.getElementById('publicTrackingInput').value;
+            const shipment = shipments.find(s => s.trackingCode === publicTrackingCode);
+            if (shipment) {
+                publicTrackingResultDiv.innerHTML = `<strong>کد رهگیری:</strong> ${shipment.trackingCode} <br>
+                                                      <strong>مبدا:</strong> ${shipment.origin} <br>
+                                                      <strong>مقصد:</strong> ${shipment.destination} <br>
+                                                      <strong>وضعیت:</strong> ${shipment.status} <br>`;
+                publicTrackingResultDiv.classList.remove('hidden');
+            } else {
+                publicTrackingResultDiv.textContent = 'بار با این کد رهگیری یافت نشد.';
+                publicTrackingResultDiv.classList.remove('hidden');
+            }
+        });
+
+        function goHome() {
+            window.location.href = "index.html"; // نام فایل صفحه اصلی را اینجا بگذارید
+        }
+    </script>
+</body>
+</html>
